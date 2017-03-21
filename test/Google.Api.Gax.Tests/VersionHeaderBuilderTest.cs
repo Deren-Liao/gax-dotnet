@@ -7,35 +7,39 @@
 
 using Xunit;
 
-namespace Google.Api.Gax.Grpc.Tests
+namespace Google.Api.Gax.Tests
 {
-    public class UserAgentBuilderTest
+    public class VersionHeaderBuilderTest
     {
         [Fact]
         public void InitiallyEmpty()
         {
-            Assert.Equal("", new UserAgentBuilder().ToString());
+            Assert.Equal("", new VersionHeaderBuilder().ToString());
         }
 
         [Fact]
         public void AppendDotNetEnvironment_AddsDotNetEntry()
         {
-            Assert.Contains("dotnet/",
-                new UserAgentBuilder().AppendDotNetEnvironment().ToString());
+            string VersionHeader = new VersionHeaderBuilder().AppendDotNetEnvironment().ToString();
+#if NETCOREAPP1_0
+            Assert.StartsWith("gl-dotnet/1.", VersionHeader);
+#else
+            Assert.StartsWith("gl-dotnet/4.", VersionHeader);
+#endif
         }
 
         [Fact]
         public void AppendVersion()
         {
             Assert.Equal("foo/1.2.3-bar",
-                new UserAgentBuilder().AppendVersion("foo", "1.2.3-bar").ToString());
+                new VersionHeaderBuilder().AppendVersion("foo", "1.2.3-bar").ToString());
         }
 
         [Fact]
         public void MultipleEntries()
         {
             Assert.Equal("foo/1.2.3-bar baz/1.0.0",
-                new UserAgentBuilder()
+                new VersionHeaderBuilder()
                     .AppendVersion("foo", "1.2.3-bar")
                     .AppendVersion("baz", "1.0.0")
                     .ToString());
@@ -46,7 +50,7 @@ namespace Google.Api.Gax.Grpc.Tests
         {
             // Our test assembly is implicitly at v1.0.0. (We don't specify a version in project.json.)
             Assert.Equal("foo/1.0.0",
-                new UserAgentBuilder().AppendAssemblyVersion("foo", GetType()).ToString());
+                new VersionHeaderBuilder().AppendAssemblyVersion("foo", GetType()).ToString());
         }
     }
 }

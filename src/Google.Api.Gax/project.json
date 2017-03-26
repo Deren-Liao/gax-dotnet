@@ -31,7 +31,7 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "NETStandard.Library": "1.6.1",
+        "System.Threading.Thread": "4.0.0",
         "Microsoft.Extensions.PlatformAbstractions": "1.1.0"
       }
     }

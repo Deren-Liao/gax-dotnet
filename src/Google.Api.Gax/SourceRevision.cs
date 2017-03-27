@@ -5,10 +5,10 @@
  * https://developers.google.com/open-source/licenses/bsd
  */
 
+using Google.Devtools.Source.V1;
+using Google.Protobuf;
 using System;
 using System.IO;
-using Google.Protobuf;
-using Google.Devtools.Source.V1;
 
 namespace Google.Api
 {
@@ -17,31 +17,29 @@ namespace Google.Api
     /// </summary>
     public static class SourceRevision
     {
+        private const string SourceContextFileName = "source-context.json";
         private static Lazy<string> s_sourceContextFilePath = new Lazy<string>(FindSourceContextFile);
         private static Lazy<SourceContext> s_sourceContext = new Lazy<SourceContext>(OpenParseSourceContextFile);
-        private static Lazy<string> s_gitRevisionId => new Lazy<string>(() => SourceContextProtoBuf?.Git.RevisionId);
-
-
-        /// <summary>
-        /// The source context file name.
-        /// </summary>
-        private const string SourceContextFileName = "source-context.json";
+        private static Lazy<string> s_gitRevisionId => new Lazy<string>(() => s_sourceContext.Value?.Git.RevisionId);
 
         /// <summary>
-        /// Gets the source context file path if it exists.
-        /// Returns null if the file is not found at root path.
+        /// Gets the custom log label of Stackdriver Logging entry for Git commit id.
         /// </summary>
-        private static string SourceContextFilePath => s_sourceContextFilePath.Value;
-
-        /// <summary>
-        /// Returns the <seealso cref="SourceContext"/> object deserealized from the source context file.
-        /// Returns null if the file does not exist, or failed to open/parse the file.
-        /// </summary>
-        private static SourceContext SourceContextProtoBuf => s_sourceContext.Value;
-
         public const string GitRevisionIdLogLabel = "git_revision_id";
+
+        /// <summary>
+        /// Gets the Git revision id if it is present. 
+        /// Returns null if there is no Git Repo source context found.
+        /// </summary>
         public static string GitRevisionId => s_gitRevisionId.Value;
 
+        /// <summary>
+        /// Open the source context file and parse it with <seealso cref="SourceContext"/> proto.
+        /// </summary>
+        /// <returns>
+        /// A <seealso cref="SourceContext"/> protobuf object if the file is read and parsed successfully.
+        /// null is returned if error happened or the source context file is not found.
+        /// </returns>
         private static SourceContext OpenParseSourceContextFile()
         {
             string sourceContext = ReadSourceContextFile();
@@ -67,7 +65,7 @@ namespace Google.Api
         {
             try
             {
-                using (StreamReader sr = new StreamReader(File.OpenRead(SourceContextFilePath)))
+                using (StreamReader sr = new StreamReader(File.OpenRead(s_sourceContextFilePath.Value)))
                 {
                     return sr.ReadToEnd();
                 }

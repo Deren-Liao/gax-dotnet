@@ -10,7 +10,7 @@ using Google.Protobuf;
 using System;
 using System.IO;
 
-namespace Google.Api
+namespace Google.Api.Gax
 {
     /// <summary>
     /// Read source-context.json from app root.
